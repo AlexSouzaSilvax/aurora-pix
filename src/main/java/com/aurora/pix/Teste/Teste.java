@@ -10,6 +10,7 @@ import com.starkbank.Project;
 import com.starkbank.Settings;
 import com.starkbank.Transaction;
 import com.starkbank.Transfer;
+import com.starkbank.Webhook;
 import com.starkbank.utils.Generator;
 
 public class Teste {
@@ -34,10 +35,18 @@ public class Teste {
 
         Settings.user = project;
         Settings.language = "pt-BR";
-        
+
+        // criaWebHookReceberLogQrCodeCriado();
+
+        // createTransacaoPix();
         int valorQrCodeDinamico = 10000; // 100,00
         valorQrCodeDinamico += (valorQrCodeDinamico * 0.01); // 1%
+        valorQrCodeDinamico += 0.15; // Taxa processamento
         createQrCodeDinamico(valorQrCodeDinamico);
+
+        // listaWebhook();
+
+        // deleteWebhook("5350796709330944");
 
         // createTransacaoEntreContas();
 
@@ -70,7 +79,7 @@ public class Teste {
         data2.put("taxId", "594.739.480-42");
         data2.put("name", "Daenerys Targaryen Stormborn");
         data2.put("scheduled", "2020-11-11T15:01:39.903667+00:00");
-        data2.put("tags", new String[] { "daenerys", "invoice/1234" });
+        data2.put("tags", new String[] { "daenerys", "invoice/1234", "brcode-payment", "deposit" });
         data2.put("rules", rules);
         transfers.add(new Transfer(data2));
 
@@ -99,7 +108,7 @@ public class Teste {
     }
 
     // Taxa para PROCESSAR = 0,15
-    // Taxa para LIQUIDAR  = 1%
+    // Taxa para LIQUIDAR = 1%
     public static void createQrCodeDinamico(int valor) throws Exception {
         List<DynamicBrcode> brcodes = new ArrayList<>();
         HashMap<String, Object> data = new HashMap<>();
@@ -110,8 +119,30 @@ public class Teste {
         brcodes = DynamicBrcode.create(brcodes);
 
         for (DynamicBrcode brcode : brcodes) {
+            System.out.println("ID: " + brcode.uuid);
+            System.out.println("Valor: " + brcode.amount);
+            System.out.println("QRCode: " + brcode.pictureUrl);
+            System.out.println("CopiaCola: " + brcode.id);
+        }
+    }
+
+    public static void createQrCodeDinamico() throws Exception {
+        List<DynamicBrcode> brcodes = new ArrayList<>();
+
+        HashMap<String, Object> data = new HashMap<>();
+
+        data.put("amount", 4000);
+        data.put("expiration", 123456789);
+        data.put("tags", new String[] { "new sword", "dynamicbrcode #1234" });
+        data.put("displayDescription", "Payment for service #1234");
+
+        brcodes.add(new DynamicBrcode(data));
+        brcodes = DynamicBrcode.create(brcodes);
+
+        for (DynamicBrcode brcode : brcodes) {
             System.out.println(brcode);
         }
+
     }
 
     public static void createTransacaoEntreContas() throws Exception {
@@ -122,7 +153,7 @@ public class Teste {
         data.put("receiverId", "5651751147405412");
         data.put("description", "A Lannister always pays his debts");
         data.put("externalId", "my_unique_id");
-        data.put("tags", new String[] { "lannister", "debts" });
+        data.put("tags", new String[] { "brcode-payment", "d" });
         transactions.add(new Transaction(data));
 
         transactions = Transaction.create(transactions);
@@ -148,5 +179,39 @@ public class Teste {
         // Saldo em conta
         Balance balance = Balance.get();
         System.out.println(balance.toString());
+    }
+
+    public static void criaWebHookReceberLogQrCodeCriado() throws Exception {
+        System.out.println(Teste.class.getName() + " criaWebHookReceberLogQrCodeCriado: Inicio.");
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("url", "https://aurora-pix.onrender.com/webhook");
+        data.put("subscriptions", new String[] { "boleto", "boleto-payment", "transfer", "utility-payment" });
+        Webhook webhook = Webhook.create(data);
+        System.out.println(webhook);
+        System.out.println(Teste.class.getName() + " criaWebHookReceberLogQrCodeCriado: Fim.");
+        /*
+         * Webhook({
+         * "url": "https://aurora-pix.onrender.com/webhook",
+         * "subscriptions": [
+         * "boleto",
+         * "boleto-payment",
+         * "transfer",
+         * "utility-payment"
+         * ],
+         * "id": "4530302380670976"
+         * })
+         */
+    }
+
+    public static void listaWebhook() throws Exception {
+        com.starkbank.utils.Generator<Webhook> webhooks = Webhook.query(); // 4679809672151040
+        for (Webhook webhook : webhooks) {
+            System.out.println(webhook);
+        }
+    }
+
+    public static void deleteWebhook(String id) throws Exception {
+        Webhook webhook = Webhook.delete(id);
+        System.out.println(webhook);
     }
 }
