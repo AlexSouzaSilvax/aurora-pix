@@ -10,12 +10,16 @@ import com.aurora.pix.dto.AssasHttpResponse;
 import com.aurora.pix.dto.CreatePixQrCodeStaticPayload;
 import com.aurora.pix.dto.CreatePixQrCodeStaticResponse;
 import com.aurora.pix.exceptions.ApiErrorException;
+import com.aurora.pix.model.Payment;
+import com.aurora.pix.repository.PaymentRepository;
 
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class PaymentService {
+
+    PaymentRepository paymentRepository;
 
     AssasService assasService;
 
@@ -29,7 +33,15 @@ public class PaymentService {
                     .createPixQrCodeStatic(createPixQrCodeStaticPayload);
 
             if (createPixQrCodeStaticResponse.isSuccess()) {
-                return ResponseEntity.ok(new CreatePixQrCodeStaticResponse(createPixQrCodeStaticResponse.getData()));
+
+                Payment newPayment = new Payment(createPixQrCodeStaticPayload,
+                        new CreatePixQrCodeStaticResponse(createPixQrCodeStaticResponse.getData()));
+
+                newPayment = paymentRepository.save(newPayment);
+
+                // TODO: Criar log de sucesso
+
+                return ResponseEntity.ok(newPayment);
             } else {
                 return ResponseEntity.status(createPixQrCodeStaticResponse.getCode())
                         .header("message", createPixQrCodeStaticResponse.getMessage()).body(null);
