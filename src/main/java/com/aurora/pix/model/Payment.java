@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.aurora.pix.dto.CreatePixQrCodeStaticPayload;
+import com.aurora.pix.dto.CreatePixQrCodeStaticResponse;
 import com.aurora.pix.enums.StatusPayment;
 
 import jakarta.persistence.Column;
@@ -13,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,28 +38,26 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private StatusPayment status;
 
-    @Column(name = "qr_code_base64", length = 999)
-    private String qrCodeBase64; // encodedImage
+    @Lob
+    @Column(name = "qr_code_base64", columnDefinition = "TEXT")
+    private String qrCodeBase64;
 
-    private String codePix; // payload
+    private String codePix;
 
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
 
     @Column(name = "owner", nullable = false)
-    private String owner; // Owner ID (user) Payment
+    private String owner;
 
-    public Payment(UUID id) {
-        this.id = id;
-    }
-
-    public Payment(BigDecimal value, String qrCodeBase64, String codePix, String owner) {
-        this.value = value;
+    public Payment(CreatePixQrCodeStaticPayload createPixQrCodeStaticPayload,
+            CreatePixQrCodeStaticResponse createPixQrCodeStaticResponse) {
+        this.value = createPixQrCodeStaticPayload.getValue();
         this.status = StatusPayment.CREATED;
-        this.qrCodeBase64 = qrCodeBase64;
-        this.codePix = codePix;
+        this.qrCodeBase64 = createPixQrCodeStaticResponse.getQrCodeBase64();
+        this.codePix = createPixQrCodeStaticResponse.getPixCode();
         this.dateCreated = LocalDateTime.now();
-        this.owner = owner;
+        this.owner = createPixQrCodeStaticPayload.getDescription();
     }
 
 }
