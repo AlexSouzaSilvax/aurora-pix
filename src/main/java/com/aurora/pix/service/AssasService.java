@@ -81,4 +81,29 @@ public class AssasService {
             throw new ApiErrorException(error.getMessage(), HttpStatus.BAD_REQUEST.value());
         }
     }
+
+    public AssasHttpResponse findAllPixPayments() {
+        try {
+
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(36, TimeUnit.SECONDS)
+                    .readTimeout(36, TimeUnit.SECONDS)
+                    .writeTimeout(36, TimeUnit.SECONDS)
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url(ASSAS_BASE_URL_API + "/pix/transactions")
+                    .get()
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("access_token", ASSAS_ACCESS_TOKEN)
+                    .build();
+
+            Response httpResponse = client.newCall(request).execute();
+
+            return new AssasHttpResponse(httpResponse);
+
+        } catch (IOException error) {
+            throw new ApiErrorException(error.getMessage(), HttpStatus.BAD_REQUEST.value());
+        }
+    }
 }

@@ -17,9 +17,9 @@ public class CreatePixQrCodeStaticPayload {
 
     private String format;
 
-    public CreatePixQrCodeStaticPayload(String description, BigDecimal value) {
-        this.description = description;
-        this.value = value;
+    public CreatePixQrCodeStaticPayload(CreatePaymentPayload createPaymentPayload) {
+        this.description = createPaymentPayload.owner();
+        this.value = createPaymentPayload.value();
         this.format = "ALL";
     }
 
